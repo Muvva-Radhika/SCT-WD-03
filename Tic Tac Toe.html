@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic-Tac-Toe Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(270deg, #ffb6c1, #87ceeb, #ffc0cb, #add8e6);
+      background-size: 800% 800%;
+      animation: gradientBG 15s ease infinite;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 15px;
+      text-shadow: 0 0 5px #000;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+      margin: 0 auto;
+    }
+
+    .cell {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #444;
+    }
+
+    .cell:hover {
+      background-color: #f0f8ff;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 20px;
+      color: #fff;
+      text-shadow: 0 0 5px #000;
+    }
+
+    button {
+      margin: 12px 6px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: linear-gradient(45deg, #ff84a2, #84d3ff);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 400px) {
+      .board {
+        grid-template-columns: repeat(3, 80px);
+        grid-template-rows: repeat(3, 80px);
+      }
+
+      .cell {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tic-Tac-Toe</h1>
+    <div class="board" id="board"></div>
+    <div class="status" id="status">Player X's turn</div>
+    <div>
+      <button onclick="resetGame()">Restart</button>
+      <button onclick="toggleMode()">Switch to Computer Mode</button>
+    </div>
+  </div>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let isGameOver = false;
+    let vsComputer = false;
+
+    function createBoard() {
+      boardEl.innerHTML = '';
+      board.forEach((cell, index) => {
+        const div = document.createElement('div');
+        div.classList.add('cell');
+        div.textContent = cell;
+        div.addEventListener('click', () => handleClick(index));
+        boardEl.appendChild(div);
+      });
+    }
+
+    function handleClick(index) {
+      if (board[index] !== '' || isGameOver) return;
+      board[index] = currentPlayer;
+      createBoard();
+      if (checkWinner()) {
+        statusEl.textContent = `Player ${currentPlayer} wins!`;
+        isGameOver = true;
+      } else if (board.every(cell => cell !== '')) {
+        statusEl.textContent = "It's a draw!";
+        isGameOver = true;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusEl.textContent = `Player ${currentPlayer}'s turn`;
+
+        if (vsComputer && currentPlayer === 'O' && !isGameOver) {
+          setTimeout(() => {
+            computerMove();
+          }, 300);
+        }
+      }
+    }
+
+    function checkWinner() {
+      const winCombos = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+      return winCombos.some(combo => {
+        const [a, b, c] = combo;
+        return board[a] && board[a] === board[b] && board[a] === board[c];
+      });
+    }
+
+    function computerMove() {
+      let available = board.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+      if (available.length === 0) return;
+      let move = available[Math.floor(Math.random() * available.length)];
+      handleClick(move);
+    }
+
+    function resetGame() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      isGameOver = false;
+      statusEl.textContent = `Player ${currentPlayer}'s turn`;
+      createBoard();
+    }
+
+    function toggleMode() {
+      vsComputer = !vsComputer;
+      resetGame();
+      document.querySelector('button[onclick="toggleMode()"]').textContent = vsComputer 
+        ? "Switch to 2 Player Mode" 
+        : "Switch to Computer Mode";
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
